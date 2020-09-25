@@ -25,8 +25,7 @@ connection.connect(function (err) {
     start();
 });
 
-
-
+//=====================================================
 // app
 //=====================================================
 function initialChoice() {
@@ -40,7 +39,7 @@ function initialChoice() {
     ])
 }
 
-// add functions
+// add category
 function addCategory() {
     return inquirer.prompt([
         {
@@ -51,7 +50,10 @@ function addCategory() {
         }
     ])
 }
+
+// user inputs
 function userContent(category) {
+
     switch (category) {
         case 'DEPARTMENT':
             return inquirer.prompt([
@@ -61,6 +63,7 @@ function userContent(category) {
                     message: `What ${category} do you want to add?`,
                 }
             ])
+
         case 'ROLE':
             return inquirer.prompt([
                 {
@@ -73,18 +76,12 @@ function userContent(category) {
                     name: 'salary',
                     message: `What salary for this role?`,
                 },
-                // {
-                //     type: 'list',
-                //     name: 'department',
-                //     message: `What is the department id number for this role?`,
-                //     choices: connection.query("SELECT * FROM department", function (err, result) {
-                //         if (err) err
+                {
+                    type: 'input',
+                    name: 'department',
+                    message: `What is the department id number for this role?`,
 
-                //         const arr = []
-                //         result.forEach(el => arr.push(el.id + " " + el.name))
-                //         return arr
-                //     })
-                // }
+                }
             ])
 
         case 'EMPLOYEE':
@@ -125,13 +122,26 @@ function viewCategory() {
     ])
 }
 
+// update employee role or manager
+function choseUpdate() {
+    return inquirer.prompt([
+        {
+            type: 'list',
+            name: 'to_update',
+            message: 'What category do you want to view',
+            choices: ['ROLE', 'MANAGER']
+        }
+    ])
+}
+
+// exit
 function exit() {
     console.log("Thank you for your input")
 
     connection.end()
 }
 
-
+// start
 async function start() {
     try {
         const res = await initialChoice()
@@ -146,9 +156,8 @@ async function start() {
         } else if (category === "VIEW") {
             viewAction(category)
         } else if (category === "UPDATE") {
-            updateAction(category)
+            updateEmpoyee()
         }
-
     }
 
     catch (err) {
@@ -156,6 +165,8 @@ async function start() {
     }
 }
 
+// ADD
+// ==============================================
 // add actions
 async function addAction(category) {
     try {
@@ -170,7 +181,7 @@ async function addAction(category) {
         console.log(err)
     }
 }
-
+// add info
 async function addInfo(userChoice) {
     try {
         const res = await userContent(userChoice)
@@ -215,6 +226,8 @@ async function addInfo(userChoice) {
     start()
 }
 
+// VIEW
+// ==============================================
 // view actions
 async function viewAction(category) {
     try {
@@ -229,7 +242,7 @@ async function viewAction(category) {
         console.log(err)
     }
 }
-
+// view infos
 function viewInfo(userChoice) {
 
     const sql = `SELECT * FROM ${userChoice}`
@@ -244,27 +257,83 @@ function viewInfo(userChoice) {
 
 }
 
+// UPDATE
+// ==============================================
+async function updateEmpoyee() {
+
+    try {
+
+        const res = await choseUpdate()
+        const toUpdate = res.to_update
+
+        connection.query(
+            "SELECT * FROM employee",
+            function (err, res) {
+                if (err) throw err
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'employee',
+                        message: 'Select the employee to update',
+                        choices: function () {
+                            const arr = []
+                            res.forEach((el) => arr.push(el.id + " " + el.first_name))
+                            console.log(arr)
+                            return arr
+                        }
+                    },
+                    {
+                        type: 'input',
+                        name: 'updated',
+                        message: `Enter the new ${toUpdate} for this employee`,
+                        validate: function (value) {
+                            if (isNaN(value) === false) {
+                                return true
+                            }
+                            return false;
+                        }
+
+                    }
+                ]).then(function (data) {
+
+                    const chosen = data.employee.split(' ')
+                    const choseId = parseInt(chosen[0])
+                    const updated = parseInt(data.updated)
+
+                    // console.log(choseId)
+                    // console.log(typeof (choseId))
+                    // console.log(newRole)
+
+                    const sql = "UPDATE employee SET ? WHERE ?"
+
+                    if (toUpdate === 'ROLE') {
+                        connection.query(sql, [{ role_id: updated }, { id: choseId }], function (err, res) {
+                            if (err) throw err
+                            console.table(res)
+                        })
+                    } else if (toUpdate === 'MANAGER') {
+                        connection.query(sql, [{ manager_id: updated }, { id: choseId }], function (err, res) {
+                            if (err) throw err
+                            console.table(res)
+                        })
+                    }
+                    start()
+                })
+            }
+        )
 
 
 
-// async function addDept(userChoice) {
-//     try {
-//         const res = await addingDept()
+    }
 
-//         const userChoice = res.department
+    catch (err) {
+        console.log(err)
+    }
 
-//         connection.query('INSERT INTO department SET ?',
-//             {
-//                 name: userChoice,
-//             }
-//         )
-//     }
 
-//     catch (err) {
-//         console.log(err)
-//     }
+}
 
-//     start()
-// }
+
 
 
