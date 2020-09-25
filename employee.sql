@@ -4,7 +4,7 @@ USE employee_db;
 
 CREATE TABLE department(
     id INTEGER AUTO_INCREMENT NOT NULL,
-    name VARCHAR(30) NULL,
+    department_name VARCHAR(30) NULL,
     PRIMARY KEY (id)
 );
 
@@ -25,5 +25,10 @@ CREATE TABLE employee(
     PRIMARY KEY (id)
 );
 
+CREATE TABLE manager(
+    id INTEGER AUTO_INCREMENT NOT NULL,
+    manager_name VARCHAR(30) NULL,
+    PRIMARY KEY (id)
+);
 
 

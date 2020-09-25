@@ -1,8 +1,23 @@
-INSERT INTO department (name)
+INSERT INTO department (department_name)
 VALUES('IT'), ('HR'), ('Marketing');
 
 INSERT INTO role (title, salary, department_id)
-VALUES('Engineer', 100, 1), ('HR Director', 80, 2), ('Marketing Officer', 100, 3);
+VALUES('Lead Engineer', 120000, 1), ('HR Director', 120000, 2), ('Marketing Director', 120000, 3), ('Engineer', 100000, 1);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES('bob', 'woodwrd', 1, 2), ('mark', 'hamill', 2, 0), ('henri', 'salvador', 2, 1);
+VALUES('John', 'Doe', 1, 1), ('Mike', 'Chan', 2, 2), ('Ashley', 'Rodriguez', 3, 3), ('Tom', 'Allen', 4, 1);
+
+INSERT INTO manager (manager_name)
+VALUES('John Doe'), ('Mike Chan'), ('Ashley Rodriguez');
+
+
+SELECT employee.first_name, employee.last_name, role.title, role.salary, department.department_name, manager.manager_name
+FROM employee
+INNER JOIN role ON employee.role_id = role.id
+INNER JOIN department ON role.department_id = department.id
+INNER JOIN manager ON employee.manager_id = manager.id;
+
+SELECT department.department_name, employee.first_name, employee.last_name 
+FROM department
+JOIN employee ON employee.role_id = department.id
+JOIN role ON role.department_id = department.id;
