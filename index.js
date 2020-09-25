@@ -40,6 +40,7 @@ function initialChoice() {
     ])
 }
 
+// add functions
 function addCategory() {
     return inquirer.prompt([
         {
@@ -50,10 +51,7 @@ function addCategory() {
         }
     ])
 }
-
 function userContent(category) {
-
-
     switch (category) {
         case 'DEPARTMENT':
             return inquirer.prompt([
@@ -75,11 +73,18 @@ function userContent(category) {
                     name: 'salary',
                     message: `What salary for this role?`,
                 },
-                {
-                    type: 'input',
-                    name: 'department',
-                    message: `What is the department id number for this role?`,
-                }
+                // {
+                //     type: 'list',
+                //     name: 'department',
+                //     message: `What is the department id number for this role?`,
+                //     choices: connection.query("SELECT * FROM department", function (err, result) {
+                //         if (err) err
+
+                //         const arr = []
+                //         result.forEach(el => arr.push(el.id + " " + el.name))
+                //         return arr
+                //     })
+                // }
             ])
 
         case 'EMPLOYEE':
@@ -97,7 +102,7 @@ function userContent(category) {
                 {
                     type: 'input',
                     name: 'role',
-                    message: `What is the employee role id?`,
+                    message: `What is the employee role id?`
                 },
                 {
                     type: 'input',
@@ -106,6 +111,18 @@ function userContent(category) {
                 },
             ])
     }
+}
+
+// view functions
+function viewCategory() {
+    return inquirer.prompt([
+        {
+            type: 'list',
+            name: 'view',
+            message: 'What category do you want to view',
+            choices: ['DEPARTMENT', 'ROLE', 'EMPLOYEE']
+        }
+    ])
 }
 
 function exit() {
@@ -196,6 +213,35 @@ async function addInfo(userChoice) {
     }
 
     start()
+}
+
+// view actions
+async function viewAction(category) {
+    try {
+        const res = await viewCategory()
+        const userChoice = res.view
+        // console.log("---------", userChoice)
+
+        viewInfo(userChoice)
+    }
+
+    catch (err) {
+        console.log(err)
+    }
+}
+
+function viewInfo(userChoice) {
+
+    const sql = `SELECT * FROM ${userChoice}`
+
+    connection.query(sql, function (err, result) {
+        if (err) throw err
+
+        console.table("\n", result)
+    })
+
+    start()
+
 }
 
 
