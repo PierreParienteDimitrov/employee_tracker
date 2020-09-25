@@ -40,7 +40,7 @@ function initialChoice() {
     ])
 }
 
-function choseCategory() {
+function addCategory() {
     return inquirer.prompt([
         {
             type: 'list',
@@ -52,13 +52,60 @@ function choseCategory() {
 }
 
 function userContent(category) {
-    return inquirer.prompt([
-        {
-            type: 'input',
-            name: 'text',
-            message: `What ${category} do you want to add?`,
-        }
-    ])
+
+
+    switch (category) {
+        case 'DEPARTMENT':
+            return inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'text',
+                    message: `What ${category} do you want to add?`,
+                }
+            ])
+        case 'ROLE':
+            return inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'title',
+                    message: `What ${category} do you want to add?`,
+                },
+                {
+                    type: 'input',
+                    name: 'salary',
+                    message: `What salary for this role?`,
+                },
+                {
+                    type: 'input',
+                    name: 'department',
+                    message: `What is the department id number for this role?`,
+                }
+            ])
+
+        case 'EMPLOYEE':
+            return inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'first_name',
+                    message: `What is the employee first name?`,
+                },
+                {
+                    type: 'input',
+                    name: 'last_name',
+                    message: `What is the employee last name?`,
+                },
+                {
+                    type: 'input',
+                    name: 'role',
+                    message: `What is the employee role id?`,
+                },
+                {
+                    type: 'input',
+                    name: 'manager',
+                    message: `What is the manager role id?`,
+                },
+            ])
+    }
 }
 
 function exit() {
@@ -72,19 +119,17 @@ async function start() {
     try {
         const res = await initialChoice()
 
-        switch (res.confirm) {
-            case 'ADD':
-                addInfo()
-                break;
-            case 'VIEW':
-                viewInfo()
-                break;
-            case 'UPDATE':
-                udpateInfo()
-                break;
-            case 'EXIT':
-                exit()
-                break;
+        const category = res.confirm
+        // console.log(category)
+
+        if (category === "EXIT") {
+            exit()
+        } else if (category === "ADD") {
+            addAction(category)
+        } else if (category === "VIEW") {
+            viewAction(category)
+        } else if (category === "UPDATE") {
+            updateAction(category)
         }
 
     }
@@ -94,12 +139,14 @@ async function start() {
     }
 }
 
-async function addInfo() {
+// add actions
+async function addAction(category) {
     try {
-        const res = await choseCategory()
+        const res = await addCategory()
         const userChoice = res.category
+        // console.log("---------", userChoice)
 
-        addingInfo(userChoice)
+        addInfo(userChoice)
     }
 
     catch (err) {
@@ -107,19 +154,41 @@ async function addInfo() {
     }
 }
 
-async function addingInfo(userChoice) {
+async function addInfo(userChoice) {
     try {
         const res = await userContent(userChoice)
 
-        const userInput = res.text
+        const category = userChoice
+        console.log(category)
 
-        console.log(userInput)
-
-        connection.query(`INSERT INTO ${userChoice} SET ?`,
-            {
-                name: userInput,
-            }
-        )
+        switch (category) {
+            case 'DEPARTMENT':
+                connection.query(`INSERT INTO ${category} SET ?`,
+                    {
+                        name: res.text,
+                    }
+                )
+                break;
+            case 'ROLE':
+                connection.query(`INSERT INTO ${category} SET ?`,
+                    {
+                        title: res.title,
+                        salary: res.salary,
+                        department_id: parseInt(res.department)
+                    }
+                )
+                break;
+            case 'EMPLOYEE':
+                connection.query(`INSERT INTO ${category} SET ?`,
+                    {
+                        first_name: res.first_name,
+                        last_name: res.last_name,
+                        role_id: parseInt(res.role),
+                        manager_id: parseInt(res.manager)
+                    }
+                )
+                break;
+        }
     }
 
     catch (err) {
