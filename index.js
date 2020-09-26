@@ -41,6 +41,13 @@ const choices =
         'Exit'
     ]
 
+const manager =
+    [
+        '1 John Doe',
+        '2 Mike Chan',
+        '3 Ashley Rodriguez'
+    ]
+
 function start() {
     inquirer.prompt([
         {
@@ -95,11 +102,9 @@ function viewAllEmployee() {
 
 function viewEmployeeDep() {
 
-    const sql = "SELECT * FROM department"
+    const sql = 'SELECT * FROM department'
 
     connection.query(sql, function (err, res) {
-
-        console.log(res)
 
         inquirer.prompt([
             {
@@ -113,12 +118,17 @@ function viewEmployeeDep() {
                 }
             }
         ]).then(function (data) {
-            console.log(data.confirm)
+            const dep = data.confirm
+
+            const sql = `SELECT employee.first_name, employee.last_name, employee.role_id, role.department_id, department.department_name FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id WHERE department.department_name = "${dep}"`
+
+            connection.query(sql, function (err, res) {
+                if (err) throw err
+                console.table(res)
+            })
+            start()
         })
-
     })
-
-
 }
 
 function viewEmployeeMan() {
@@ -127,7 +137,7 @@ function viewEmployeeMan() {
 
 function addEmployee() {
 
-    const sql = "SELECT role.title, manager.manager_name FROM role INNER JOIN manager ON role.id = manager.id;"
+    const sql = "SELECT * FROM role"
     connection.query(sql, function (err, res) {
         if (err) throw err
 
@@ -148,32 +158,39 @@ function addEmployee() {
                 message: `What is the employee role?`,
                 choices: function () {
                     const depArr = []
-                    res.forEach((el) => depArr.push(el.id + " " + el.title))
+                    let index = 1
+                    res.forEach((el) => {
+                        depArr.push(index + " " + el.title)
+                        index++
+                    })
                     return depArr
                 }
             },
             {
                 type: 'list',
                 name: 'manager',
-                message: `What is the employee manager?`,
-                choices: function () {
-                    const depArr = []
-                    res.forEach((el) => depArr.push(el.manager_name))
-                    return depArr
-                }
+                message: 'What is the employee manager?',
+                choices: manager
             },
         ]).then(function (data) {
 
             console.log(data)
-            // connection.query(`INSERT INTO employee SET ?`,
-            //     {
-            //         first_name: res.first_name,
-            //         last_name: res.last_name,
-            //         role_id: parseInt(res.role),
-            //         manager_id: parseInt(res.manager)
-            //     }
-            // )
+            const roleId = parseInt(data.role.split(" ")[0])
+            const managerId = parseInt(data.manager.split(" ")[0])
 
+            connection.query(`INSERT INTO employee SET ?`,
+                {
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    role_id: roleId,
+                    manager_id: managerId,
+                },
+                function (err, res) {
+                    if (err) throw err
+                    console.log('Successfully added employee to database')
+                    start()
+                }
+            )
         })
     })
 }

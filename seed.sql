@@ -17,7 +17,8 @@ INNER JOIN role ON employee.role_id = role.id
 INNER JOIN department ON role.department_id = department.id
 INNER JOIN manager ON employee.manager_id = manager.id;
 
-SELECT department.department_name, employee.first_name, employee.last_name 
-FROM department
-JOIN employee ON employee.role_id = department.id
-JOIN role ON role.department_id = department.id;
+SELECT employee.first_name, employee.last_name, employee.role_id, role.department_id, department.department_name
+FROM employee
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id
+WHERE department.department_name = "IT";
