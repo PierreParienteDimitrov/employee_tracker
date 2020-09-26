@@ -16,7 +16,8 @@ const connection = mysql.createConnection({
 
     // Your password
     password: "password",
-    database: "employee_db"
+    database: "employee_db",
+    multipleStatements: true
 });
 
 connection.connect(function (err) {
@@ -195,6 +196,69 @@ function addEmployee() {
     })
 }
 
+function removeEmployee() {
+    console.log('Remove Employee')
+}
+
+function updateEmployeeRole() {
+    const sql = 'SELECT * FROM employee; SELECT * FROM role'
+
+    connection.query(sql, [1, 2], function (err, res) {
+        if (err) throw err
+
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: 'Select employee to udpate',
+                choices: function () {
+                    const arr = []
+                    let index = 1
+                    res[0].forEach((el) => {
+                        arr.push(index + " " + el.first_name + " " + el.last_name)
+                        index++
+                    })
+                    return arr
+                }
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Change employee role to:',
+                choices: function () {
+                    const arr = []
+                    let index = 1
+                    res[1].forEach((el) => {
+                        arr.push(index + " " + el.title)
+                        index++
+                    })
+                    return arr
+                }
+            }
+
+        ]).then(function (data) {
+
+            console.log(data)
+            const employeeId = parseInt(data.employee.split(" "))
+            console.log(employeeId)
+
+            const newRole = parseInt(data.role.split(" "))
+            console.log(newRole)
+
+            const sql = "UPDATE employee SET ? WHERE ?"
+
+            connection.query(sql, [{ role_id: newRole }, { id: employeeId }], function (err, res) {
+                if (err) throw err
+                console.table(res)
+
+                start()
+
+            })
+        })
+    })
+}
+
 
 function exit() {
     console.log('Good Bye')
@@ -204,243 +268,6 @@ function exit() {
 
 
 
-
-
-
-
-
-
-
-
-
-// function initialChoice() {
-//     return inquirer.prompt([
-//         {
-//             type: 'list',
-//             name: 'confirm',
-//             message: 'Do you want to add, view or update information?',
-//             choices: ['ADD', 'VIEW', 'UPDATE', 'EXIT']
-//         }
-//     ])
-// }
-
-// // add category
-// function addCategory() {
-//     return inquirer.prompt([
-//         {
-//             type: 'list',
-//             name: 'category',
-//             message: 'Do you want to add departments, roles or employees?',
-//             choices: ['DEPARTMENT', 'ROLE', 'EMPLOYEE']
-//         }
-//     ])
-// }
-
-// // user inputs
-// function userContent(category) {
-
-//     switch (category) {
-//         case 'DEPARTMENT':
-//             return inquirer.prompt([
-//                 {
-//                     type: 'input',
-//                     name: 'text',
-//                     message: `What ${category} do you want to add?`,
-//                 }
-//             ])
-
-//         case 'ROLE':
-//             return inquirer.prompt([
-//                 {
-//                     type: 'input',
-//                     name: 'title',
-//                     message: `What ${category} do you want to add?`,
-//                 },
-//                 {
-//                     type: 'input',
-//                     name: 'salary',
-//                     message: `What salary for this role?`,
-//                 },
-//                 {
-//                     type: 'input',
-//                     name: 'department',
-//                     message: `What is the department id number for this role?`,
-
-//                 }
-//             ])
-
-//         case 'EMPLOYEE':
-//             return inquirer.prompt([
-//                 {
-//                     type: 'input',
-//                     name: 'first_name',
-//                     message: `What is the employee first name?`,
-//                 },
-//                 {
-//                     type: 'input',
-//                     name: 'last_name',
-//                     message: `What is the employee last name?`,
-//                 },
-//                 {
-//                     type: 'input',
-//                     name: 'role',
-//                     message: `What is the employee role id?`
-//                 },
-//                 {
-//                     type: 'input',
-//                     name: 'manager',
-//                     message: `What is the manager role id?`,
-//                 },
-//             ])
-//     }
-// }
-
-// // view functions
-// function viewCategory() {
-//     return inquirer.prompt([
-//         {
-//             type: 'list',
-//             name: 'view',
-//             message: 'What category do you want to view',
-//             choices: ['DEPARTMENT', 'ROLE', 'EMPLOYEE']
-//         }
-//     ])
-// }
-
-// // update employee role or manager
-// function choseUpdate() {
-//     return inquirer.prompt([
-//         {
-//             type: 'list',
-//             name: 'to_update',
-//             message: 'What category do you want to view',
-//             choices: ['ROLE', 'MANAGER']
-//         }
-//     ])
-// }
-
-// // exit
-// function exit() {
-//     console.log("Thank you for your input")
-
-//     connection.end()
-// }
-
-// // start
-// async function start() {
-//     try {
-//         const res = await initialChoice()
-
-//         const category = res.confirm
-//         // console.log(category)
-
-//         if (category === "EXIT") {
-//             exit()
-//         } else if (category === "ADD") {
-//             addAction(category)
-//         } else if (category === "VIEW") {
-//             viewAction(category)
-//         } else if (category === "UPDATE") {
-//             updateEmpoyee()
-//         }
-//     }
-
-//     catch (err) {
-//         console.log(err)
-//     }
-// }
-
-// // ADD
-// // ==============================================
-// // add actions
-// async function addAction(category) {
-//     try {
-//         const res = await addCategory()
-//         const userChoice = res.category
-//         // console.log("---------", userChoice)
-
-//         addInfo(userChoice)
-//     }
-
-//     catch (err) {
-//         console.log(err)
-//     }
-// }
-// // add info
-// async function addInfo(userChoice) {
-//     try {
-//         const res = await userContent(userChoice)
-
-//         const category = userChoice
-//         console.log(category)
-
-//         switch (category) {
-//             case 'DEPARTMENT':
-//                 connection.query(`INSERT INTO ${category} SET ?`,
-//                     {
-//                         name: res.text,
-//                     }
-//                 )
-//                 break;
-//             case 'ROLE':
-//                 connection.query(`INSERT INTO ${category} SET ?`,
-//                     {
-//                         title: res.title,
-//                         salary: res.salary,
-//                         department_id: parseInt(res.department)
-//                     }
-//                 )
-//                 break;
-//             case 'EMPLOYEE':
-//                 connection.query(`INSERT INTO ${category} SET ?`,
-//                     {
-//                         first_name: res.first_name,
-//                         last_name: res.last_name,
-//                         role_id: parseInt(res.role),
-//                         manager_id: parseInt(res.manager)
-//                     }
-//                 )
-//                 break;
-//         }
-//     }
-
-//     catch (err) {
-//         console.log(err)
-//     }
-
-//     start()
-// }
-
-// // VIEW
-// // ==============================================
-// // view actions
-// async function viewAction(category) {
-//     try {
-//         const res = await viewCategory()
-//         const userChoice = res.view
-//         // console.log("---------", userChoice)
-
-//         viewInfo(userChoice)
-//     }
-
-//     catch (err) {
-//         console.log(err)
-//     }
-// }
-// // view infos
-// function viewInfo(userChoice) {
-
-//     const sql = `SELECT * FROM ${userChoice}`
-
-//     connection.query(sql, function (err, result) {
-//         if (err) throw err
-
-//         console.table("\n", result)
-//     })
-
-//     start()
-
-// }
 
 // // UPDATE
 // // ==============================================

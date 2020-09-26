@@ -13,7 +13,9 @@ const connection = mysql.createConnection({
 
     // Your password
     password: "password",
-    database: "employee_db"
+    database: "employee_db",
+
+    multipleStatements: true
 });
 
 connection.connect(function (err) {
@@ -25,17 +27,28 @@ connection.connect(function (err) {
 
 
 function show() {
-    const sql = 'SELECT * FROM department'
+    const sql = 'SELECT * FROM department; SELECT * FROM employee'
 
-    console.log('show')
-
-    connection.query(sql, function (err, result) {
+    connection.query(sql, [1, 2], function (err, result) {
         if (err) throw err
 
-        console.log(result.department)
+        console.log(result[0][0].department_name)
+        // console.log(result[1])
     })
 
     connection.end
 
 }
 
+
+
+// Once enabled, you can execute queries with multiple statements by separating each statement with a semi - colon;.Result will be an array for each statement.
+
+//     Example
+// connection.query('SELECT ?; SELECT ?', [1, 2], function (err, results) {
+//         if (err) throw err;
+
+//         // `results` is an array with one element for every statement in the query:
+//         console.log(results[0]); // [{1: 1}]
+//         console.log(results[1]); // [{2: 2}]
+//     });
