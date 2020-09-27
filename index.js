@@ -214,10 +214,8 @@ function updateEmployeeRole() {
                 message: 'Select employee to udpate',
                 choices: function () {
                     const arr = []
-                    let index = 1
                     res[0].forEach((el) => {
-                        arr.push(index + " " + el.first_name + " " + el.last_name)
-                        index++
+                        arr.push(el.id + " " + el.first_name + " " + el.last_name)
                     })
                     return arr
                 }
@@ -228,10 +226,8 @@ function updateEmployeeRole() {
                 message: 'Change employee role to:',
                 choices: function () {
                     const arr = []
-                    let index = 1
                     res[1].forEach((el) => {
-                        arr.push(index + " " + el.title)
-                        index++
+                        arr.push(el.id + " " + el.title)
                     })
                     return arr
                 }
@@ -239,18 +235,15 @@ function updateEmployeeRole() {
 
         ]).then(function (data) {
 
-            console.log(data)
             const employeeId = parseInt(data.employee.split(" "))
-            console.log(employeeId)
 
             const newRole = parseInt(data.role.split(" "))
-            console.log(newRole)
 
             const sql = "UPDATE employee SET ? WHERE ?"
 
             connection.query(sql, [{ role_id: newRole }, { id: employeeId }], function (err, res) {
                 if (err) throw err
-                console.table(res)
+                console.log(`\n Employee ID N.${data.employee} was updated to new role ID N.${data.role} \n`)
 
                 start()
 
