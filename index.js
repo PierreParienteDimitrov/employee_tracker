@@ -42,13 +42,6 @@ const choices =
         'Exit'
     ]
 
-const manager =
-    [
-        '1 John Doe',
-        '2 Mike Chan',
-        '3 Ashley Rodriguez'
-    ]
-
 function start() {
     inquirer.prompt([
         {
@@ -137,8 +130,39 @@ function viewEmployeeDep() {
 }
 
 function viewEmployeeMan() {
-    console.log('Hello')
+
+    const sql = 'SELECT * FROM manager'
+
+    connection.query(sql, function (err, res) {
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'confirm',
+                message: 'What manager employees do you want to see?',
+                choices: function () {
+                    const depArr = []
+                    res.forEach((el) => depArr.push(el.manager_name))
+                    return depArr
+                }
+            }
+        ]).then(function (data) {
+            const dep = data.confirm
+
+            let sql = `SELECT employee.first_name, employee.last_name, employee.manager_id, manager.manager_name, manager.id`
+            sql += ` FROM employee`
+            sql += ` JOIN manager ON employee.manager_id = manager.id;`
+
+            connection.query(sql, function (err, res) {
+                if (err) throw err
+                console.table(res)
+                start()
+            })
+
+        })
+    })
 }
+
 
 function addEmployee() {
 
@@ -206,7 +230,35 @@ function addEmployee() {
 }
 
 function removeEmployee() {
-    console.log('Remove Employee')
+    const sql = 'SELECT * FROM employee'
+
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'to_delete',
+                message: 'select the employee you want to delete',
+                choices: function () {
+                    const newArr = []
+                    res.forEach((el) => newArr.push(el.id + " " + el.first_name + " " + el.last_name))
+                    return newArr
+                }
+            }
+        ]).then(function (data) {
+            const idToDelete = parseInt(data.to_delete.split(" "))
+
+            const sql = `DELETE FROM employee WHERE employee.id = ${idToDelete}`
+
+            connection.query(sql, function (err, res) {
+                if (err) throw err
+                console.log(`\n Employee id N.${data.to_delete} has been deleted \n`)
+                start()
+            })
+
+        })
+    })
 }
 
 function updateEmployeeRole() {

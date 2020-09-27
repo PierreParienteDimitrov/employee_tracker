@@ -22,3 +22,7 @@ FROM employee
 LEFT JOIN role ON employee.role_id = role.id
 LEFT JOIN department ON role.department_id = department.id
 WHERE department.department_name = "IT";
+
+SELECT employee.first_name, employee.last_name, employee.manager_id, manager.manager_name, manager.id
+FROM employee 
+JOIN manager ON employee.manager_id = manager.id;
