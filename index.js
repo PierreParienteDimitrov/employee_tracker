@@ -121,7 +121,11 @@ function viewEmployeeDep() {
         ]).then(function (data) {
             const dep = data.confirm
 
-            const sql = `SELECT employee.first_name, employee.last_name, employee.role_id, role.department_id, department.department_name FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id WHERE department.department_name = "${dep}"`
+            let sql = `SELECT employee.first_name, employee.last_name, employee.role_id, role.department_id, department.department_name`
+            sql += ` FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department`
+            sql += ` ON role.department_id = department.id`
+            sql += ` WHERE department.department_name = "${dep}"`
+
 
             connection.query(sql, function (err, res) {
                 if (err) throw err
