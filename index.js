@@ -138,8 +138,8 @@ function viewEmployeeMan() {
 
 function addEmployee() {
 
-    const sql = "SELECT * FROM role"
-    connection.query(sql, function (err, res) {
+    const sql = 'SELECT * FROM role; SELECT * FROM manager'
+    connection.query(sql, [1, 2], function (err, res) {
         if (err) throw err
 
         inquirer.prompt([
@@ -158,26 +158,30 @@ function addEmployee() {
                 name: 'role',
                 message: `What is the employee role?`,
                 choices: function () {
-                    const depArr = []
-                    let index = 1
-                    res.forEach((el) => {
-                        depArr.push(index + " " + el.title)
-                        index++
+                    const newArr = []
+                    res[0].forEach((el) => {
+                        newArr.push(el.id + " " + el.title)
                     })
-                    return depArr
+                    return newArr
                 }
             },
             {
                 type: 'list',
                 name: 'manager',
                 message: 'What is the employee manager?',
-                choices: manager
+                choices: function () {
+                    const newArr = []
+                    res[1].forEach((el) => {
+                        newArr.push(el.id + " " + el.manager_name)
+                    })
+                    return newArr
+                }
             },
         ]).then(function (data) {
 
             console.log(data)
-            const roleId = parseInt(data.role.split(" ")[0])
-            const managerId = parseInt(data.manager.split(" ")[0])
+            const roleId = parseInt(data.role.split(" "))
+            const managerId = parseInt(data.manager.split(" "))
 
             connection.query(`INSERT INTO employee SET ?`,
                 {
@@ -188,7 +192,8 @@ function addEmployee() {
                 },
                 function (err, res) {
                     if (err) throw err
-                    console.log('Successfully added employee to database')
+                    console.log(res)
+                    console.log(`\n New employee ${data.first_name} ${data.last_name} successfully added to database \n`)
                     start()
                 }
             )
