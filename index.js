@@ -33,12 +33,12 @@ const choices =
     [
         'View All Employees',
         'View All Employees by Department',
-        'View All Employees by Manager',
         'Add Employee',
         'Remove Employee',
         'Update Employee Role',
         'Update Employee Manager',
         'View All Roles',
+        'View total budget of department',
         'Exit'
     ]
 
@@ -61,22 +61,22 @@ function start() {
                 viewEmployeeDep()
                 break;
             case choices[2]:
-                viewEmployeeMan()
-                break;
-            case choices[3]:
                 addEmployee()
                 break;
-            case choices[4]:
+            case choices[3]:
                 removeEmployee()
                 break;
-            case choices[5]:
+            case choices[4]:
                 updateEmployeeRole()
                 break;
-            case choices[6]:
+            case choices[5]:
                 updateEmployeeManager()
                 break;
-            case choices[7]:
+            case choices[6]:
                 viewAllRole()
+                break;
+            case choices[7]:
+                viewBudget()
                 break;
             case choices[8]:
                 exit()
@@ -125,40 +125,6 @@ function viewEmployeeDep() {
                 console.table(res)
             })
             start()
-        })
-    })
-}
-
-function viewEmployeeMan() {
-
-    const sql = 'SELECT * FROM manager'
-
-    connection.query(sql, function (err, res) {
-
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: 'confirm',
-                message: 'What manager employees do you want to see?',
-                choices: function () {
-                    const depArr = []
-                    res.forEach((el) => depArr.push(el.manager_name))
-                    return depArr
-                }
-            }
-        ]).then(function (data) {
-            const dep = data.confirm
-
-            let sql = `SELECT employee.first_name, employee.last_name, employee.manager_id, manager.manager_name, manager.id`
-            sql += ` FROM employee`
-            sql += ` JOIN manager ON employee.manager_id = manager.id;`
-
-            connection.query(sql, function (err, res) {
-                if (err) throw err
-                console.table(res)
-                start()
-            })
-
         })
     })
 }
@@ -362,6 +328,59 @@ function updateEmployeeManager() {
     })
 }
 
+function viewAllRole() {
+    const sql = "SELECT * FROM role"
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+        console.table(res)
+        start()
+    })
+}
+
+function viewBudget() {
+    const sql = 'SELECT * FROM department'
+
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: 'Select the budget of the department:',
+                choices: function () {
+                    const newArr = []
+                    res.forEach((el) => newArr.push(el.department_name))
+                    return newArr
+                }
+            }
+        ]).then(function (data) {
+
+            let sql = `SELECT employee.role_id, role.department_id, role.salary, department.department_name`
+            sql += ` FROM employee`
+            sql += ` LEFT JOIN role ON employee.role_id = role.id`
+            sql += ` LEFT JOIN department`
+            sql += ` ON role.department_id = department.id`
+            sql += ` WHERE department.department_name = "${data.department}"`
+
+            connection.query(sql, function (err, res) {
+                if (err) throw err
+
+                const budgetArr = []
+                res.forEach((el) => budgetArr.push(parseInt(el.salary)))
+                // console.log(budgetArr)
+
+                let budget = 0
+                budgetArr.forEach((el) => {
+                    budget += el
+                })
+                console.log(`\n The total budget of the department is $${budget} \n`)
+
+                start()
+            })
+        })
+    })
+}
 
 function exit() {
     console.log('Good Bye')
@@ -371,84 +390,37 @@ function exit() {
 
 
 
+// function viewEmployeeMan() {
 
-// // UPDATE
-// // ==============================================
-// async function updateEmpoyee() {
+//     const sql = 'SELECT * FROM manager'
 
-//     try {
+//     connection.query(sql, function (err, res) {
 
-//         const res = await choseUpdate()
-//         const toUpdate = res.to_update
-
-//         connection.query(
-//             "SELECT * FROM employee",
-//             function (err, res) {
-//                 if (err) throw err
-
-//                 inquirer.prompt([
-//                     {
-//                         type: 'list',
-//                         name: 'employee',
-//                         message: 'Select the employee to update',
-//                         choices: function () {
-//                             const arr = []
-//                             res.forEach((el) => arr.push(el.id + " " + el.first_name))
-//                             console.log(arr)
-//                             return arr
-//                         }
-//                     },
-//                     {
-//                         type: 'input',
-//                         name: 'updated',
-//                         message: `Enter the new ${toUpdate} for this employee`,
-//                         validate: function (value) {
-//                             if (isNaN(value) === false) {
-//                                 return true
-//                             }
-//                             return false;
-//                         }
-
-//                     }
-//                 ]).then(function (data) {
-
-//                     const chosen = data.employee.split(' ')
-//                     const choseId = parseInt(chosen[0])
-//                     const updated = parseInt(data.updated)
-
-//                     // console.log(choseId)
-//                     // console.log(typeof (choseId))
-//                     // console.log(newRole)
-
-//                     const sql = "UPDATE employee SET ? WHERE ?"
-
-//                     if (toUpdate === 'ROLE') {
-//                         connection.query(sql, [{ role_id: updated }, { id: choseId }], function (err, res) {
-//                             if (err) throw err
-//                             console.table(res)
-//                         })
-//                     } else if (toUpdate === 'MANAGER') {
-//                         connection.query(sql, [{ manager_id: updated }, { id: choseId }], function (err, res) {
-//                             if (err) throw err
-//                             console.table(res)
-//                         })
-//                     }
-//                     start()
-//                 })
+//         inquirer.prompt([
+//             {
+//                 type: 'list',
+//                 name: 'confirm',
+//                 message: 'What manager employees do you want to see?',
+//                 choices: function () {
+//                     const depArr = []
+//                     res.forEach((el) => depArr.push(el.id + " " + el.manager_name))
+//                     return depArr
+//                 }
 //             }
-//         )
+//         ]).then(function (data) {
+//             const dep = parseInt(data.confirm.split(" "))
 
+//             let sql = `SELECT employee.first_name, employee.last_name, employee.manager_id, manager.manager_name, manager.id`
+//             sql += ` FROM employee`
+//             sql += ` JOIN manager ON employee.manager_id = manager.id;`
+//             sql += ` WHERE manager.id = "${dep}"`
 
+//             connection.query(sql, function (err, res) {
+//                 if (err) throw err
+//                 console.table(res)
+//                 start()
+//             })
 
-//     }
-
-//     catch (err) {
-//         console.log(err)
-//     }
-
-
+//         })
+//     })
 // }
-
-
-
-

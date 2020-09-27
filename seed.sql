@@ -26,3 +26,11 @@ WHERE department.department_name = "IT";
 SELECT employee.first_name, employee.last_name, employee.manager_id, manager.manager_name, manager.id
 FROM employee 
 JOIN manager ON employee.manager_id = manager.id;
+
+-- View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+SELECT employee.role_id, role.department_id, role.salary, department.department_name
+FROM employee 
+LEFT JOIN role ON employee.role_id = role.id 
+LEFT JOIN department
+ON role.department_id = department.id
+WHERE department.department_name = "IT"
