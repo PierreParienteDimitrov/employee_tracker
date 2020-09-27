@@ -163,7 +163,6 @@ function viewEmployeeMan() {
     })
 }
 
-
 function addEmployee() {
 
     const sql = 'SELECT * FROM role; SELECT * FROM manager'
@@ -307,7 +306,57 @@ function updateEmployeeRole() {
                 console.log(`\n Employee ID N.${data.employee} was updated to new role ID N.${data.role} \n`)
 
                 start()
+            })
+        })
+    })
+}
 
+function updateEmployeeManager() {
+    const sql = 'SELECT * FROM employee; SELECT * FROM manager'
+
+    connection.query(sql, [1, 2], function (err, res) {
+        if (err) throw err
+
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: 'Select employee to udpate',
+                choices: function () {
+                    const arr = []
+                    res[0].forEach((el) => {
+                        arr.push(el.id + " " + el.first_name + " " + el.last_name)
+                    })
+                    return arr
+                }
+            },
+            {
+                type: 'list',
+                name: 'manager',
+                message: 'Change employee manager to:',
+                choices: function () {
+                    const arr = []
+                    res[1].forEach((el) => {
+                        arr.push(el.id + " " + el.manager_name)
+                    })
+                    return arr
+                }
+            }
+
+        ]).then(function (data) {
+
+            const employeeId = parseInt(data.employee.split(" "))
+
+            const newManagerId = parseInt(data.manager.split(" "))
+
+            const sql = "UPDATE employee SET ? WHERE ?"
+
+            connection.query(sql, [{ manager_id: newManagerId }, { id: employeeId }], function (err, res) {
+                if (err) throw err
+                console.log(`\n Employee ID N.${data.employee} was updated to new manager ID N.${data.manager} \n`)
+
+                start()
             })
         })
     })
